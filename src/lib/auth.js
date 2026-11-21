@@ -2,6 +2,7 @@
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URI);
 
@@ -15,15 +16,37 @@ export const auth = betterAuth({
   },
 
   user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: false,
-        defaultValue: "customer",
-        input: true,
-      },
+  additionalFields: {
+    role: {
+      type: "string",
+      required: false,
+      defaultValue: "customer",
+      input: false,
+    },
+    isBlocked: {
+      type: "boolean",
+      required: false,
+      defaultValue: false,
+      input: false,
+    },
+    businessName: {
+      type: "string",
+      required: false,
+      input: false,
+    },
+    subscriptionPlan: {
+      type: "string",
+      required: false,
+      defaultValue: "free",
+      input: false,
+    },
+    subscriptionExpiresAt: {
+      type: "date",
+      required: false,
+      input: false,
     },
   },
+},
 
   socialProviders: {
     google: {
@@ -35,4 +58,7 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
+  plugins: [
+  jwt(),
+],
 });

@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

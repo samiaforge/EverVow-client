@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -96,26 +97,31 @@ const SignInPage = () => {
 
       <Card className="w-full max-w-md border-[#EDE3D8] bg-white shadow-xl shadow-[#76243A]/5">
 
-        <CardHeader className="space-y-3 text-center">
+        <CardHeader className="space-y-4 text-center">
 
-          <Link
-            href="/"
-            className="font-serif text-3xl font-bold italic text-[#76243A]"
-          >
-            EverVow
-          </Link>
+  {/* Centered Logo */}
+  <Link href="/" className="flex justify-center items-center">
+    <Image
+      src="/images/logo.png"
+      alt="Evervow"
+      width={140}
+      height={50}
+      priority
+      className="h-12 w-auto object-contain"
+    />
+  </Link>
 
-          <CardTitle className="text-2xl font-semibold text-[#292321]">
-            Welcome Back
-          </CardTitle>
+  <CardTitle className="text-2xl font-semibold text-[#292321]">
+    Welcome Back
+  </CardTitle>
 
-          <CardDescription className="text-[#756A63]">
-            Sign in to continue planning your perfect wedding.
-          </CardDescription>
+  <CardDescription className="text-[#756A63]">
+    Sign in to continue planning your perfect wedding.
+  </CardDescription>
 
-        </CardHeader>
+</CardHeader>
 
-        <CardContent>
+       <CardContent className="px-7 pb-8 pt-2 sm:px-8">
 
           <form onSubmit={handleSignIn} className="space-y-5">
 
@@ -152,6 +158,7 @@ const SignInPage = () => {
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}

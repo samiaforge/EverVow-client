@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -148,14 +149,20 @@ const SignUpPage = () => {
 
       <Card className="w-full max-w-lg border-[#EDE3D8] bg-white shadow-xl shadow-[#76243A]/5">
 
-        <CardHeader className="space-y-3 text-center">
+        <CardHeader className="space-y-4 text-center">
 
-          <Link
-            href="/"
-            className="font-serif text-3xl font-bold italic text-[#76243A]"
-          >
-            EverVow
-          </Link>
+  {/* Centered Logo */}
+  <Link href="/" className="flex justify-center items-center">
+    <Image
+      src="/images/logo.png"
+      alt="Evervow"
+      width={135}
+      height={45}
+      priority
+      className="h-12 w-auto object-contain"
+    />
+  </Link>
+
 
           <CardTitle className="text-2xl font-semibold text-[#292321]">
             Create Your Account
@@ -167,7 +174,7 @@ const SignUpPage = () => {
 
         </CardHeader>
 
-        <CardContent>
+       <CardContent className="px-7 pb-8 pt-2 sm:px-8">
 
           <form onSubmit={handleSignUp} className="space-y-5">
 

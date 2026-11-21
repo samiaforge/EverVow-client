@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -8,6 +7,7 @@ import { authClient } from "@/lib/auth-client";
 
 import {
   DropdownMenu,
+  DropdownMenuGroup,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -47,25 +47,20 @@ const Navbar = () => {
   return (
     <nav
       className={`sticky top-0 z-50 w-full transition-colors duration-300 ${
-        isHomePage
-          ? "bg-transparent"
-          : "bg-[#F8F3EB] shadow-sm"
+        isHomePage ? "bg-transparent" : "bg-[#F8F3EB] shadow-sm"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-8 lg:px-12">
-
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          
           <Image
-  src="/images/logo.png"
-  alt="Evervow"
-  width={150}
-  height={50}
-  priority
-  className="h-11 w-auto"
-/>
-          
+            src="/images/logo.png"
+            alt="Evervow"
+            width={150}
+            height={50}
+            priority
+            className="h-11 w-auto"
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -91,55 +86,63 @@ const Navbar = () => {
             <div className="h-8 w-20 animate-pulse rounded-full bg-[#76243A]/10" />
           ) : user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full border border-[#76243A]/20 bg-white/50 px-3 py-1.5 transition hover:bg-white">
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name || "User"}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#76243A] text-sm font-semibold text-white">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-full border border-[#76243A]/20 bg-white/50 px-3 py-1.5 transition hover:bg-white">
+                {user.image ? (
+                  <img
+                    src={user.image}
+                    alt={user.name || "User"}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#76243A] text-sm font-semibold text-white">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
 
-                  <span className="max-w-28 truncate text-sm font-medium text-[#76243A]">
-                    {user.name}
-                  </span>
-                </button>
+                <span className="max-w-28 truncate text-sm font-medium text-[#76243A]">
+                  {user.name}
+                </span>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span>{user.name}</span>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {user.email}
-                    </span>
-                  </div>
-                </DropdownMenuLabel>
 
-                <DropdownMenuSeparator />
+  <DropdownMenuGroup>
+    <DropdownMenuLabel>
+      <div className="flex flex-col">
+        <span>{user.name}</span>
+        <span className="text-xs font-normal text-muted-foreground">
+          {user.email}
+        </span>
+      </div>
+    </DropdownMenuLabel>
+  </DropdownMenuGroup>
 
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
-                </DropdownMenuItem>
+  <DropdownMenuSeparator />
 
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile Settings</Link>
-                </DropdownMenuItem>
+  <DropdownMenuItem
+    onClick={() => router.push("/dashboard")}
+    className="cursor-pointer"
+  >
+    Dashboard
+  </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
+  <DropdownMenuItem
+    onClick={() => router.push("/profile")}
+    className="cursor-pointer"
+  >
+    Profile Settings
+  </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="cursor-pointer text-red-600 focus:text-red-600"
-                >
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+  <DropdownMenuSeparator />
+
+  <DropdownMenuItem
+    onClick={handleLogout}
+    className="cursor-pointer text-red-600 focus:text-red-600"
+  >
+    Logout
+  </DropdownMenuItem>
+
+</DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
@@ -167,9 +170,7 @@ const Navbar = () => {
           aria-label="Toggle menu"
           aria-expanded={mobileMenuOpen}
         >
-          <span className="text-2xl">
-            {mobileMenuOpen ? "×" : "☰"}
-          </span>
+          <span className="text-2xl">{mobileMenuOpen ? "×" : "☰"}</span>
         </button>
       </div>
 
