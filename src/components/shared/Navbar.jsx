@@ -23,14 +23,41 @@ const Navbar = () => {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
+
+  const userRole = user?.role?.toLowerCase();
+
+const dashboardPath =
+  user?.role?.toLowerCase() === "admin"
+    ? "/admin-dashboard"
+    : user?.role?.toLowerCase() === "vendor"
+      ? "/vendor-dashboard"
+      : "/customer-dashboard";
+
+const profilePath =
+  userRole === "customer"
+    ? "/customer-dashboard/profile"
+    : userRole === "vendor"
+    ? "/vendor-dashboard/profile"
+    : "/admin-dashboard/profile";
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isHomePage = pathname === "/";
 
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Browse Services", href: "/services" },
-  ];
+ const navLinks = [
+  {
+    id: "home",
+    label: "Home",
+    href: "/",
+  },
+  {
+    id: "services",
+    label: "Browse Services",
+    href: "/services",
+  },
+];
+
+
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -66,18 +93,14 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-[18px] font-bold transition-colors duration-200  ${
-                pathname === link.href
-                  ? "text-[#76243A]"
-                  : "text-[#76243A]/80 hover:text-[#581525]"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
+    <Link
+      key={link.id}
+      href={link.href}
+      className="text-[18px] text-[#76243A] font-medium hover:text-[#471220] transition-colors"
+    >
+      {link.label}
+    </Link>
+  ))}
         </div>
 
         {/* Authentication */}
@@ -120,18 +143,18 @@ const Navbar = () => {
   <DropdownMenuSeparator />
 
   <DropdownMenuItem
-    onClick={() => router.push("/dashboard")}
-    className="cursor-pointer"
-  >
-    Dashboard
-  </DropdownMenuItem>
+  onClick={() => router.push(dashboardPath)}
+  className="cursor-pointer"
+>
+  Dashboard
+</DropdownMenuItem>
 
   <DropdownMenuItem
-    onClick={() => router.push("/profile")}
-    className="cursor-pointer"
-  >
-    Profile Settings
-  </DropdownMenuItem>
+  onClick={() => router.push(profilePath)}
+  className="cursor-pointer"
+>
+  Profile Settings
+</DropdownMenuItem>
 
   <DropdownMenuSeparator />
 
@@ -179,15 +202,15 @@ const Navbar = () => {
         <div className="absolute left-0 right-0 top-full mx-4 rounded-2xl border border-[#76243A]/10 bg-[#F8F3EB] p-5 shadow-lg md:hidden">
           <div className="flex flex-col gap-4">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-medium text-[#76243A]"
-              >
-                {link.name}
-              </Link>
-            ))}
+  <Link
+    key={link.id}
+    href={link.href}
+    onClick={() => setMobileMenuOpen(false)}
+    className="font-medium text-[#76243A]"
+  >
+    {link.name}
+  </Link>
+))}
 
             <div className="border-t border-[#76243A]/10 pt-4">
               {isPending ? (
@@ -199,20 +222,20 @@ const Navbar = () => {
                   </p>
 
                   <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-[#76243A]"
-                  >
-                    Dashboard
-                  </Link>
+  href={dashboardPath}
+  onClick={() => setMobileMenuOpen(false)}
+  className="block py-2 text-sm text-[#76243A]"
+>
+  Browse Services
+</Link>
 
                   <Link
-                    href="/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-[#76243A]"
-                  >
-                    Profile Settings
-                  </Link>
+  href={profilePath}
+  onClick={() => setMobileMenuOpen(false)}
+  className="block py-2 text-sm text-[#76243A]"
+>
+  Profile Settings
+</Link>
 
                   <button
                     onClick={handleLogout}
