@@ -126,8 +126,8 @@ export default function SubscriptionPage() {
   }
 
   const isPremium =
-    subscription?.plan === "premium" &&
-    subscription?.status === "active";
+  subscription?.premium === true &&
+  subscription?.subscriptionStatus === "active";
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -156,7 +156,7 @@ export default function SubscriptionPage() {
             </p>
 
             <h2 className="mt-2 text-2xl font-bold capitalize text-[#292321]">
-              {subscription?.plan || "Free"} Plan
+              {subscription?.subscriptionPlan || "Free"} Plan
             </h2>
 
             <p className="mt-1 text-sm text-[#94765F]">
@@ -177,12 +177,15 @@ export default function SubscriptionPage() {
           </span>
         </div>
 
-        {isPremium && subscription?.expiresAt && (
-          <p className="mt-4 text-sm text-[#94765F]">
-            Subscription expires:{" "}
-            {new Date(subscription.expiresAt).toLocaleDateString()}
-          </p>
-        )}
+        {isPremium && subscription?.subscriptionExpiresAt && (
+  <p className="mt-4 text-sm text-[#94765F]">
+    Subscription expires:{" "}
+    {new Date(
+      subscription.subscriptionExpiresAt
+    ).toLocaleDateString()}
+  </p>
+)}
+        
       </div>
 
       {/* Plans */}

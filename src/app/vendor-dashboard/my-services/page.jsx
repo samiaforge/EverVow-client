@@ -77,6 +77,7 @@ const getServiceImage = (service) => {
 export default function MyServicesPage() {
   // States
   const [services, setServices] = useState([]);
+  const [isPremium, setIsPremium] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -106,7 +107,7 @@ export default function MyServicesPage() {
     };
   };
 
-  // Fetch logged-in vendor's services
+ 
   
   // Fetch logged-in vendor's services
   const fetchMyServices = async () => {
@@ -114,16 +115,35 @@ export default function MyServicesPage() {
       // First complete an async operation
       const headers = await getAuthHeaders();
 
-      setLoading(true);
-      setError("");
+setLoading(true);
+setError("");
 
-      const response = await fetch(
-        `${API_URL}/my-services`,
-        {
-          method: "GET",
-          headers,
-        }
-      );
+// Fetch subscription status
+const subscriptionResponse = await fetch(
+  `${API_URL}/subscription-status`,
+  {
+    method: "GET",
+    headers,
+  }
+);
+
+const subscriptionData = await subscriptionResponse.json();
+
+if (subscriptionResponse.ok) {
+  setIsPremium(
+    subscriptionData.premium === true &&
+    subscriptionData.subscriptionStatus === "active"
+  );
+}
+
+// Fetch services
+const response = await fetch(
+  `${API_URL}/my-services`,
+  {
+    method: "GET",
+    headers,
+  }
+);
 
       const result = await response.json();
 
@@ -414,54 +434,59 @@ export default function MyServicesPage() {
       </div>
 
       {/* Free Plan Usage */}
-      <Card className="border-[#E7DCCF] bg-[#F1E8DC]">
-        <CardContent className="p-5">
+      {/* Free Plan Usage */}
+{!isPremium && (
+  <Card className="border-[#E7DCCF] bg-[#F1E8DC]">
+    <CardContent className="p-5">
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="font-semibold text-[#292321]">
-                Free Plan Usage
-              </h3>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-              <p className="mt-1 text-sm text-[#625B56]">
-                You can have up to 3 active services on your Free plan.
-              </p>
-            </div>
+        <div>
+          <h3 className="font-semibold text-[#292321]">
+            Free Plan Usage
+          </h3>
 
-            <div className="text-sm font-semibold text-[#76243A]">
-              {activeServices}/3 Active Services
-            </div>
-          </div>
+          <p className="mt-1 text-sm text-[#625B56]">
+            You can have up to 3 active services on your Free plan.
+          </p>
+        </div>
 
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#DCCDBD]">
-            <div
-              className="h-full rounded-full bg-[#76243A] transition-all"
-              style={{
-                width: `${Math.min((activeServices / 3) * 100, 100)}%`,
-              }}
-            />
-          </div>
+        <div className="text-sm font-semibold text-[#76243A]">
+          {activeServices}/3 Active Services
+        </div>
 
-          {activeServices >= 3 && (
-            <p className="mt-3 text-sm text-[#76243A]">
-              You have reached your active service limit.
-              Upgrade to Premium to activate unlimited services.
-            </p>
-          )}
+      </div>
 
-          <div className="mt-4">
-            <Link href="/vendor-dashboard/subscription">
-              <Button
-                variant="outline"
-                className="border-[#76243A] text-[#76243A] hover:bg-[#76243A] hover:text-white"
-              >
-                Upgrade Plan
-              </Button>
-            </Link>
-          </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#DCCDBD]">
+        <div
+          className="h-full rounded-full bg-[#76243A] transition-all"
+          style={{
+            width: `${Math.min((activeServices / 3) * 100, 100)}%`,
+          }}
+        />
+      </div>
 
-        </CardContent>
-      </Card>
+      {activeServices >= 3 && (
+        <p className="mt-3 text-sm text-[#76243A]">
+          You have reached your active service limit.
+          Upgrade to Premium to activate unlimited services.
+        </p>
+      )}
+
+      <div className="mt-4">
+        <Link href="/vendor-dashboard/subscription">
+          <Button
+            variant="outline"
+            className="border-[#76243A] text-[#76243A] hover:bg-[#76243A] hover:text-white"
+          >
+            Upgrade Plan
+          </Button>
+        </Link>
+      </div>
+
+    </CardContent>
+  </Card>
+)}
 
       {/* Search and Filters */}
       <Card className="border-[#E7DCCF] bg-white">
