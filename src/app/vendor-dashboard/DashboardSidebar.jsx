@@ -36,7 +36,7 @@ const dashboardLinks = [
   },
   {
     title: "Booking Requests",
-    url: "/vendor-dashboard/bookings",
+    url: "/vendor-dashboard/booking-requests",
     icon: "fa-solid fa-calendar-check",
   },
   {

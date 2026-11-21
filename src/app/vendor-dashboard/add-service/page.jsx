@@ -132,7 +132,7 @@ export default function AddServicePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <p className="text-sm font-medium tracking-widest text-[#94765F]">
+        <p className="mb-2 text-sm font-medium uppercase tracking-[3px] text-[#76243A]">
           VENDOR WORKSPACE
         </p>
 

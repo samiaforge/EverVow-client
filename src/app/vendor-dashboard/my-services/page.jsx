@@ -323,7 +323,7 @@ export default function MyServicesPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="mb-2 text-sm font-medium text-[#94765F]">
+          <p className="mb-2 text-sm font-medium uppercase tracking-[3px] text-[#76243A]">
             Vendor Dashboard
           </p>
 
