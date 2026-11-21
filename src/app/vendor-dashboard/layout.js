@@ -11,6 +11,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+
+export const instant = false;
+
 export default async function DashboardLayout({ children }) {
   // Check logged-in user
   const session = await auth.api.getSession({
