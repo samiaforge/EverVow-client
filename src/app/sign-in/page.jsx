@@ -38,59 +38,88 @@ const SignInPage = () => {
     }));
   };
 
-  // Credential Login
-  const handleSignIn = async (e) => {
-    e.preventDefault();
+  
+const getDashboardPath = (role) => {
+  if (role === "admin") return "/admin-dashboard";
+  if (role === "vendor") return "/vendor-dashboard";
+  if (role === "customer") return "/dashboard";
 
-    setLoading(true);
+  return null;
+};
 
-    try {
-      const { data, error } = await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
-      });
+// Credential Login
+const handleSignIn = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-      if (error) {
-        toast.error(error.message || "Invalid email or password.");
-        return;
-      }
+  try {
+    const { error } = await authClient.signIn.email({
+      email: formData.email,
+      password: formData.password,
+    });
 
-      toast.success("Welcome back!");
-
-      // Get user role
-      const user = data?.user;
-
-      if (user?.role === "admin") {
-        router.push("/admin-dashboard");
-      } else if (user?.role === "vendor") {
-        router.push("/vendor-dashboard");
-      } else {
-        router.push("/dashboard");
-      }
-
-      router.refresh();
-    } catch (error) {
-      toast.error(error.message || "Sign in failed.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      toast.error(error.message || "Invalid email or password.");
+      return;
     }
-  };
+
+    // Fetch the latest session
+    const { data: sessionData, error: sessionError } =
+      await authClient.getSession();
+
+    if (sessionError || !sessionData?.user) {
+      toast.error("Unable to verify your account.");
+      await authClient.signOut();
+      return;
+    }
+
+    const user = sessionData.user;
+
+    // Block blocked users
+    if (user.isBlocked === true) {
+      toast.error("Your account has been blocked.");
+      await authClient.signOut();
+      return;
+    }
+
+    const dashboardPath = getDashboardPath(user.role);
+
+    if (!dashboardPath) {
+      toast.error("Invalid account role.");
+      await authClient.signOut();
+      return;
+    }
+
+    toast.success("Welcome back!");
+
+    router.replace(dashboardPath);
+    router.refresh();
+
+  } catch (error) {
+    toast.error(error.message || "Sign in failed.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Google Login
-  const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/dashboard",
-      });
+  
+const handleGoogleSignIn = async () => {
+  try {
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/auth/callback",
+    });
 
-      if (error) {
-        toast.error(error.message || "Google login failed.");
-      }
-    } catch (error) {
-      toast.error("Unable to sign in with Google.");
+    if (error) {
+      toast.error(error.message || "Google login failed.");
     }
-  };
+  } catch (error) {
+    toast.error("Unable to sign in with Google.");
+  }
+};
+
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F8F3EB] px-4 py-10">
