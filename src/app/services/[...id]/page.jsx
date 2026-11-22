@@ -12,6 +12,10 @@ export default function ServiceDetailsPage() {
   const params = useParams();
   const router = useRouter();
 
+   const { data: session, isPending: sessionPending } = authClient.useSession();
+
+  const userRole = session?.user?.role?.toLowerCase();
+
   const serviceId = params.id;
 
   const [service, setService] = useState(null);
@@ -65,6 +69,10 @@ export default function ServiceDetailsPage() {
 
   const handleBooking = async (e) => {
     e.preventDefault();
+    if (userRole !== "customer") {
+  toast.error("Only customers can request a booking");
+  return;
+}
 
     if (!eventDate || !eventLocation.trim()) {
       toast.error("Please fill in the required fields");
@@ -176,32 +184,29 @@ export default function ServiceDetailsPage() {
           {/* Service Information */}
           <div className="space-y-6 lg:col-span-2">
             {/* Images */}
-            <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-              {images.length > 0 ? (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {images.map((image, index) => (
-                    <div
-                      key={index}
-                      className={`overflow-hidden ${
-                        index === 0 && images.length > 1
-                          ? "sm:row-span-2"
-                          : ""
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${service.serviceName} ${index + 1}`}
-                        className="h-64 w-full object-cover sm:h-72"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex h-72 items-center justify-center text-[#94765F]">
-                  No images available
-                </div>
-              )}
-            </div>
+            {/* Service Images */}
+<div className="overflow-hidden rounded-2xl shadow-sm">
+  {images.length > 0 ? (
+    <div className="grid grid-cols-1 gap-2">
+      {images.map((image, index) => (
+        <div
+          key={index}
+          className="flex w-full items-center justify-center overflow-hidden bg-[#F8F5F0]"
+        >
+          <img
+            src={image}
+            alt={`${service.serviceName} ${index + 1}`}
+            className="h-[330px] w-full object-contain sm:h-[400px] lg:h-[460px] "
+          />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="flex h-[350px] w-full items-center justify-center bg-[#E8DDD0] text-[#94765F]">
+      No images available
+    </div>
+  )}
+</div>
 
             {/* Details */}
             <div className="rounded-2xl border border-[#E8DDD0] bg-white p-6 shadow-sm">
@@ -281,98 +286,126 @@ export default function ServiceDetailsPage() {
             </div>
           </div>
 
-          {/* Booking Form */}
-          <div>
-            <div className="sticky top-24 rounded-2xl border border-[#E8DDD0] bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-[#76243A]">
-                Request a Booking
-              </h2>
+         
+          {/* Booking Section */}
+<div>
+  {sessionPending ? (
+    <div className="flex min-h-60 items-center justify-center rounded-2xl border border-[#E8DDD0] bg-white">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#E8DDD0] border-t-[#76243A]" />
+    </div>
+  ) : userRole === "customer" ? (
+    <div className="sticky top-24 rounded-2xl border border-[#E8DDD0] bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-[#76243A]">
+        Request a Booking
+      </h2>
 
-              <p className="mt-2 text-sm text-[#625B56]">
-                Submit your event details to request this service.
-              </p>
+      <p className="mt-2 text-sm text-[#625B56]">
+        Submit your event details to request this service.
+      </p>
 
-              <form
-                onSubmit={handleBooking}
-                className="mt-6 space-y-5"
-              >
-                {/* Event Date */}
-                <div>
-                  <label
-                    htmlFor="eventDate"
-                    className="mb-2 block text-sm font-medium text-[#76243A]"
-                  >
-                    Event Date *
-                  </label>
+      <form
+        onSubmit={handleBooking}
+        className="mt-6 space-y-5"
+      >
+        {/* Event Date */}
+        <div>
+          <label
+            htmlFor="eventDate"
+            className="mb-2 block text-sm font-medium text-[#76243A]"
+          >
+            Event Date *
+          </label>
 
-                  <input
-                    id="eventDate"
-                    type="date"
-                    required
-                    min={new Date().toISOString().split("T")[0]}
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
-                  />
-                </div>
+          <input
+            id="eventDate"
+            type="date"
+            required
+            min={new Date().toISOString().split("T")[0]}
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            className="w-full rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
+          />
+        </div>
 
-                {/* Event Location */}
-                <div>
-                  <label
-                    htmlFor="eventLocation"
-                    className="mb-2 block text-sm font-medium text-[#76243A]"
-                  >
-                    Event Location *
-                  </label>
+        {/* Event Location */}
+        <div>
+          <label
+            htmlFor="eventLocation"
+            className="mb-2 block text-sm font-medium text-[#76243A]"
+          >
+            Event Location *
+          </label>
 
-                  <input
-                    id="eventLocation"
-                    type="text"
-                    required
-                    placeholder="Enter event location"
-                    value={eventLocation}
-                    onChange={(e) => setEventLocation(e.target.value)}
-                    className="w-full rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
-                  />
-                </div>
+          <input
+            id="eventLocation"
+            type="text"
+            required
+            placeholder="Enter event location"
+            value={eventLocation}
+            onChange={(e) => setEventLocation(e.target.value)}
+            className="w-full rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
+          />
+        </div>
 
-                {/* Message */}
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="mb-2 block text-sm font-medium text-[#76243A]"
-                  >
-                    Additional Message
-                  </label>
+        {/* Message */}
+        <div>
+          <label
+            htmlFor="message"
+            className="mb-2 block text-sm font-medium text-[#76243A]"
+          >
+            Additional Message
+          </label>
 
-                  <textarea
-                    id="message"
-                    rows={4}
-                    placeholder="Tell the vendor about your wedding..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="w-full resize-none rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
-                  />
-                </div>
+          <textarea
+            id="message"
+            rows={4}
+            placeholder="Tell the vendor about your wedding..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full resize-none rounded-lg border border-[#E8DDD0] px-4 py-3 text-sm outline-none focus:border-[#76243A]"
+          />
+        </div>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full rounded-lg bg-[#76243A] py-3 font-medium text-white transition hover:bg-[#5C1B2C] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submitting
-                    ? "Submitting Request..."
-                    : "Request Booking"}
-                </button>
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full rounded-lg bg-[#76243A] py-3 font-medium text-white transition hover:bg-[#5C1B2C] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting
+            ? "Submitting Request..."
+            : "Request Booking"}
+        </button>
 
-                <p className="text-center text-xs text-[#94765F]">
-                  Your booking request will be pending until
-                  the vendor responds.
-                </p>
-              </form>
-            </div>
-          </div>
+        <p className="text-center text-xs text-[#94765F]">
+          Your booking request will be pending until
+          the vendor responds.
+        </p>
+      </form>
+    </div>
+  ) : (
+    <div className="rounded-2xl border border-[#E8DDD0] bg-white p-6 text-center shadow-sm">
+      <h2 className="text-xl font-bold text-[#76243A]">
+        Booking Unavailable
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-[#625B56]">
+        {userRole === "vendor"
+          ? "Vendor accounts cannot submit booking requests. You can browse wedding services and manage your own services from your dashboard."
+          : "Only customer accounts can submit booking requests for wedding services."}
+      </p>
+
+      {userRole === "vendor" && (
+        <Link
+          href="/vendor-dashboard"
+          className="mt-5 inline-block rounded-lg bg-[#76243A] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#5C1B2C]"
+        >
+          Go to Dashboard
+        </Link>
+      )}
+    </div>
+  )}
+</div>
         </div>
       </div>
     </main>

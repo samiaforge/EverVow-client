@@ -1,6 +1,9 @@
+
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import {
   CalendarDays,
   Clock,
@@ -8,21 +11,65 @@ import {
   XCircle,
 } from "lucide-react";
 
+const API_URL = "http://localhost:5000";
+
 export default function CustomerDashboardPage() {
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch customer's bookings from database
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+
+        const { data } = await authClient.token();
+
+        if (!data?.token) {
+          toast.error("Please login first");
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/my-bookings`, {
+          headers: {
+            Authorization: `Bearer ${data.token}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Failed to load dashboard data"
+          );
+        }
+
+        setBookings(
+          Array.isArray(result) ? result : result.bookings || []
+        );
+      } catch (error) {
+        toast.error(error.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  // Calculate booking statistics
   const totalBookings = bookings.length;
 
   const pendingBookings = bookings.filter(
-    (booking) => booking.status === "pending"
+    (booking) => booking.status?.toLowerCase() === "pending"
   ).length;
 
   const acceptedBookings = bookings.filter(
-    (booking) => booking.status === "accepted"
+    (booking) => booking.status?.toLowerCase() === "accepted"
   ).length;
 
   const rejectedBookings = bookings.filter(
-    (booking) => booking.status === "rejected"
+    (booking) => booking.status?.toLowerCase() === "rejected"
   ).length;
 
   const stats = [
@@ -52,9 +99,16 @@ export default function CustomerDashboardPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#76243A] border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold sm:text-3xl">
@@ -109,7 +163,6 @@ export default function CustomerDashboardPage() {
           bookings, and stay updated with your vendors.
         </p>
       </div>
-
     </div>
   );
 }

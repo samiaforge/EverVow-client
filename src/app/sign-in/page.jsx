@@ -42,7 +42,7 @@ const SignInPage = () => {
 const getDashboardPath = (role) => {
   if (role === "admin") return "/admin-dashboard";
   if (role === "vendor") return "/vendor-dashboard";
-  if (role === "customer") return "/dashboard";
+  if (role === "customer") return "/";
 
   return null;
 };

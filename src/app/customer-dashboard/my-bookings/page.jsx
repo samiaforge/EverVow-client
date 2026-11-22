@@ -1,9 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const API_URL = "http://localhost:5000";
 
@@ -38,11 +38,7 @@ export default function MyBookingsPage() {
         throw new Error(result.message || "Failed to load bookings");
       }
 
-      setBookings(
-        Array.isArray(result)
-          ? result
-          : result.bookings || []
-      );
+      setBookings(Array.isArray(result) ? result : result.bookings || []);
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     } finally {
@@ -50,13 +46,13 @@ export default function MyBookingsPage() {
     }
   };
 
- useEffect(() => {
-  const loadBookings = async () => {
-    await fetchBookings();
-  };
+  useEffect(() => {
+    const loadBookings = async () => {
+      await fetchBookings();
+    };
 
-  loadBookings();
-}, []);
+    loadBookings();
+  }, []);
 
   // Cancel booking
   const handleCancelBooking = async () => {
@@ -67,16 +63,13 @@ export default function MyBookingsPage() {
 
       const { data } = await authClient.token();
 
-      const response = await fetch(
-        `${API_URL}/bookings/${cancelId}/cancel`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/bookings/${cancelId}/cancel`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       const result = await response.json();
 
@@ -139,9 +132,7 @@ export default function MyBookingsPage() {
           Customer Dashboard
         </p>
 
-        <h1 className="mt-2 text-3xl font-bold text-[#321923]">
-          My Bookings
-        </h1>
+        <h1 className="mt-2 text-3xl font-bold text-[#321923]">My Bookings</h1>
 
         <p className="mt-2 text-sm text-gray-500">
           Track and manage all your wedding service booking requests.
@@ -157,20 +148,19 @@ export default function MyBookingsPage() {
           },
           {
             label: "Pending",
-            value: bookings.filter(
-              (b) => b.status?.toLowerCase() === "pending"
-            ).length,
+            value: bookings.filter((b) => b.status?.toLowerCase() === "pending")
+              .length,
           },
           {
             label: "Accepted",
             value: bookings.filter(
-              (b) => b.status?.toLowerCase() === "accepted"
+              (b) => b.status?.toLowerCase() === "accepted",
             ).length,
           },
           {
             label: "Rejected",
             value: bookings.filter(
-              (b) => b.status?.toLowerCase() === "rejected"
+              (b) => b.status?.toLowerCase() === "rejected",
             ).length,
           },
         ].map((item) => (
@@ -208,12 +198,12 @@ export default function MyBookingsPage() {
               Explore our wedding services and make your first booking.
             </p>
 
-            <a
+            <Link
               href="/services"
               className="mt-5 inline-block rounded-full bg-[#76243A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#5d1b2e]"
             >
               Explore Services
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="space-y-5">
@@ -231,8 +221,8 @@ export default function MyBookingsPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-4xl">
-                      💐
+                    <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                      No Image
                     </div>
                   )}
                 </div>
@@ -246,7 +236,7 @@ export default function MyBookingsPage() {
 
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(
-                        booking.status
+                        booking.status,
                       )}`}
                     >
                       {booking.status || "Pending"}
@@ -365,7 +355,7 @@ export default function MyBookingsPage() {
                 <p className="text-gray-400">Booking Status</p>
                 <span
                   className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(
-                    selectedBooking.status
+                    selectedBooking.status,
                   )}`}
                 >
                   {selectedBooking.status}
@@ -392,8 +382,8 @@ export default function MyBookingsPage() {
             </h2>
 
             <p className="mt-3 text-sm text-gray-500">
-              Are you sure you want to cancel this booking request? This
-              action cannot be undone.
+              Are you sure you want to cancel this booking request? This action
+              cannot be undone.
             </p>
 
             <div className="mt-6 flex gap-3">

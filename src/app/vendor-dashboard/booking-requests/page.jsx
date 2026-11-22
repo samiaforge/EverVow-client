@@ -376,7 +376,7 @@ export default function BookingRequestsPage() {
                   <div>
                     <p className="text-sm text-gray-500">Service Price</p>
                     <p className="font-medium text-[#292321]">
-                        <i class="fa-solid fa-bangladeshi-taka-sign"></i>
+                        <i className="fa-solid fa-bangladeshi-taka-sign"></i>
                       {Number(booking.servicePrice || 0).toLocaleString("en-BD")}
                     </p>
                   </div>
