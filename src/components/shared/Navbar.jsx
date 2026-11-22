@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { Menu, X } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -73,9 +74,9 @@ const profilePath =
 
   return (
     <nav
-      className={`sticky top-0 z-50 w-full transition-colors duration-300 ${
-        isHomePage ? "bg-transparent" : "bg-[#F8F3EB] shadow-sm"
-      }`}
+      className={`relative z-50 w-full transition-colors duration-300 ${
+  isHomePage ? "bg-transparent" : "bg-[#F8F3EB] shadow-sm"
+}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-8 lg:px-12">
         {/* Logo */}
@@ -96,7 +97,7 @@ const profilePath =
     <Link
       key={link.id}
       href={link.href}
-      className="text-[18px] text-[#76243A] font-medium hover:text-[#471220] transition-colors"
+      className="text-[19px] text-[#862841] font-semibold hover:text-[#471220] transition-colors"
     >
       {link.label}
     </Link>
@@ -193,7 +194,11 @@ const profilePath =
           aria-label="Toggle menu"
           aria-expanded={mobileMenuOpen}
         >
-          <span className="text-2xl">{mobileMenuOpen ? "×" : "☰"}</span>
+          {mobileMenuOpen ? (
+  <X size={24} />
+) : (
+  <Menu size={24} />
+)}
         </button>
       </div>
 
@@ -208,7 +213,7 @@ const profilePath =
     onClick={() => setMobileMenuOpen(false)}
     className="font-medium text-[#76243A]"
   >
-    {link.name}
+    {link.label}
   </Link>
 ))}
 
