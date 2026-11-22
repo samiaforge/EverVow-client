@@ -1,5 +1,4 @@
-"use client";
-
+import { requireRole } from "@/lib/require-role";
 import AdminDashboardSidebar from "./AdminDashboardSidebar";
 
 import {
@@ -8,7 +7,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-export default function AdminDashboardLayout({ children }) {
+export const instant = false;
+
+export default async function AdminDashboardLayout({ children }) {
+  await requireRole("admin");
+
   return (
     <SidebarProvider>
       <AdminDashboardSidebar />

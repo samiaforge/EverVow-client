@@ -11,7 +11,8 @@ import {
   XCircle,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function CustomerDashboardPage() {
   const [bookings, setBookings] = useState([]);

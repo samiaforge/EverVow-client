@@ -117,7 +117,7 @@ const SignUpPage = () => {
       if (formData.role === "vendor") {
         router.push("/vendor-dashboard");
       } else {
-        router.push("/dashboard");
+        router.push("/");
       }
 
       router.refresh();

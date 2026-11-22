@@ -60,7 +60,7 @@ export default function AdminDashboardSidebar() {
 
           <div>
             <h2 className="text-xl font-bold text-[#76243A]">
-              WedPlan
+              EverVow
             </h2>
             <p className="text-xs text-[#94765F]">
               Admin Panel

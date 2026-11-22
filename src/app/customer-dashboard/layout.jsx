@@ -1,5 +1,4 @@
-
-"use client";
+import { requireRole } from "@/lib/require-role";
 
 import {
   SidebarProvider,
@@ -9,7 +8,11 @@ import {
 
 import DashboardSidebar from "./DashboardSidebar";
 
-export default function CustomerDashboardLayout({ children }) {
+export const instant = false;
+
+export default async function CustomerDashboardLayout({ children }) {
+  await requireRole("customer");
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#F8F5F0]">
