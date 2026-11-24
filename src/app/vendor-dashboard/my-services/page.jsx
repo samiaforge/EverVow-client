@@ -52,8 +52,7 @@ import {
 import { toast } from "sonner";
 
 // Backend URL
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Service categories
 const categories = [

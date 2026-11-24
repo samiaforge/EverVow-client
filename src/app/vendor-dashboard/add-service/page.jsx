@@ -5,6 +5,9 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export default function AddServicePage() {
   const [formData, setFormData] = useState({
     serviceName: "",
@@ -92,7 +95,7 @@ export default function AddServicePage() {
         images: [imageUrl],
       };
 
-      const response = await fetch("http://localhost:5000/services", {
+      const response = await fetch(`${API_URL}/services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

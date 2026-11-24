@@ -4,6 +4,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 const FeaturedServices = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ const FeaturedServices = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://localhost:5000/services");
+        const response = await fetch(`${API_URL}/services`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch services");
@@ -23,7 +25,14 @@ const FeaturedServices = () => {
           ? data
           : data.services || [];
 
-        setServices(serviceList.slice(0, 6));
+        // Show all approved and active services
+        const featuredServices = serviceList.filter(
+          (service) =>
+            service.status === "approved" &&
+            service.isActive === true
+        );
+
+        setServices(featuredServices);
       } catch (error) {
         console.error("Services fetch error:", error);
       } finally {
@@ -110,8 +119,6 @@ const FeaturedServices = () => {
 
                   {/* Card Content */}
                   <div className="p-5 sm:p-6">
-
-                    {/* Service Name */}
                     <h3 className="text-xl font-serif font-bold text-[#76243A] mb-3 line-clamp-1">
                       {service.serviceName}
                     </h3>
