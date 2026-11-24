@@ -13,32 +13,21 @@ if (!uri) {
 const options = {
   maxPoolSize: 5,
   minPoolSize: 0,
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 5000,
-  socketTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 15000,
+  connectTimeoutMS: 10000,
 };
 
-let client;
+const globalForMongo = globalThis;
 
-function getClient() {
-  // The driver sets client.topology = undefined when close() runs.
-  // On serverless, an idle/frozen instance can come back with a dead
-  // topology, so create a fresh client instead of reusing it forever.
-  if (!client || !client.topology) {
-    client = new MongoClient(uri, options);
-  }
-  return client;
+const client =
+  globalForMongo.mongoClient ||
+  new MongoClient(uri, options);
+
+if (process.env.NODE_ENV !== "production") {
+  globalForMongo.mongoClient = client;
 }
 
-// The adapter stores this object once at startup. Every real database call
-// is resolved live through getClient(), so a closed connection is replaced.
-const db = new Proxy({}, {
-  get(_target, prop) {
-    const liveDb = getClient().db("weddingplan");
-    const value = liveDb[prop];
-    return typeof value === "function" ? value.bind(liveDb) : value;
-  },
-});
+const db = client.db("weddingplan");
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -96,6 +85,9 @@ export const auth = betterAuth({
     },
   },
 
-  database: mongodbAdapter(db),
+  database: mongodbAdapter(db, {
+    client,
+  }),
+
   plugins: [jwt()],
 });
