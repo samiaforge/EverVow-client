@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -32,22 +33,22 @@ export default function AdminDashboard() {
           Authorization: `Bearer ${data.token}`,
         };
 
-        const [usersResponse, servicesResponse] = await Promise.all([
-          fetch(`${API_URL}/admin/users`, {
-            headers,
-          }),
+        const [usersResponse, servicesResponse, transactionsResponse] =
+  await Promise.all([
+    fetch(`${API_URL}/admin/users`, { headers }),
+    fetch(`${API_URL}/admin/services`, { headers }),
+    fetch(`${API_URL}/admin/transactions`, { headers }),
+  ]);
 
-          fetch(`${API_URL}/admin/services`, {
-            headers,
-          }),
-        ]);
-
-        if (!usersResponse.ok || !servicesResponse.ok) {
+        if (!usersResponse.ok || !servicesResponse.ok || !transactionsResponse.ok) {
           throw new Error("Failed to load dashboard data");
         }
 
         const usersData = await usersResponse.json();
         const servicesData = await servicesResponse.json();
+        const transactionsData = await transactionsResponse.json();
+
+
 
         setUsers(
           Array.isArray(usersData)
@@ -60,6 +61,12 @@ export default function AdminDashboard() {
             ? servicesData
             : servicesData.services || []
         );
+
+        setTransactions(
+  Array.isArray(transactionsData)
+    ? transactionsData
+    : transactionsData.transactions || []
+);
       } catch (error) {
         console.error("Dashboard data error:", error);
       } finally {
@@ -126,7 +133,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Transactions",
-      value: "—",
+      value: transactions.length,
       icon: CreditCard,
       description: "Payment records",
       color: "bg-[#5D718A]",

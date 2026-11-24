@@ -33,7 +33,7 @@ export default function AuthCallbackPage() {
     } else if (user.role === "vendor") {
       router.replace("/vendor-dashboard");
     } else if (user.role === "customer") {
-      router.replace("/dashboard");
+      router.replace("/");
     } else {
       authClient.signOut().then(() => {
         router.replace("/sign-in");

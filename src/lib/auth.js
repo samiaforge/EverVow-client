@@ -11,10 +11,14 @@ const db = client.db("weddingplan");
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
 
-  trustedOrigins: [
-    "https://ever-vow-client.vercel.app",
-    "http://localhost:3000",
-  ],
+  ttrustedOrigins: [
+  process.env.BETTER_AUTH_URL,
+  process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : null,
+  "http://localhost:3000",
+].filter(Boolean),
 
   emailAndPassword: {
     enabled: true,
