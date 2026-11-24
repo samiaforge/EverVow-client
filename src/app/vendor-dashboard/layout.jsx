@@ -1,8 +1,5 @@
 
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/require-role";
 import DashboardSidebar from "./DashboardSidebar";
 
 import {
@@ -15,33 +12,7 @@ import {
 export const instant = false;
 
 export default async function DashboardLayout({ children }) {
-  // Check logged-in user
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  // Not logged in
-  if (!session?.user) {
-    redirect("/sign-in");
-  }
-
-  // Blocked account
-  if (session.user.isBlocked === true) {
-    redirect("/sign-in?blocked=true");
-  }
-
-  // Only vendor can access this dashboard
-  if (session.user.role !== "vendor") {
-    if (session.user.role === "admin") {
-      redirect("/admin-dashboard");
-    }
-
-    if (session.user.role === "customer") {
-      redirect("/dashboard");
-    }
-
-    redirect("/sign-in");
-  }
+ await requireRole("vendor");
 
   return (
     <SidebarProvider>
