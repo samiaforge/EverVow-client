@@ -4,7 +4,24 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
 
-const client = new MongoClient(process.env.BETTER_AUTH_DB_URI);
+const mongoUri = process.env.BETTER_AUTH_DB_URI;
+
+if (!mongoUri) {
+  throw new Error("BETTER_AUTH_DB_URI is missing");
+}
+
+const globalForMongo = globalThis;
+
+const client =
+  globalForMongo.__everVowMongoClient ||
+  new MongoClient(mongoUri, {
+    maxPoolSize: 5,
+    minPoolSize: 0,
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+  });
+
+globalForMongo.__everVowMongoClient = client;
 
 const db = client.db("weddingplan");
 
