@@ -20,12 +20,16 @@ const options = {
 const globalForMongo = globalThis;
 
 const client =
-  globalForMongo.mongoClient ||
-  new MongoClient(uri, options);
+  globalForMongo.mongoClient || new MongoClient(uri, options);
+globalForMongo.mongoClient = client; // production e o
 
-if (process.env.NODE_ENV !== "production") {
-  globalForMongo.mongoClient = client;
-}
+client.on("topologyClosed", () => {
+  console.error("MONGO topologyClosed", new Error().stack);
+});
+
+client.connect().catch((e) => {
+  console.error("MONGO CONNECT FAIL:", e.name, e.message);
+});
 
 const db = client.db("weddingplan");
 
