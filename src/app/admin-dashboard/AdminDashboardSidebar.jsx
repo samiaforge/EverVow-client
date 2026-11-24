@@ -124,7 +124,7 @@ export default function AdminDashboardSidebar() {
 
         <div className="mt-3 rounded-xl bg-[#E8DDD0]/60 p-3">
           <p className="text-xs font-medium text-[#76243A]">
-            WedPlan Administration
+            EverVow Administration
           </p>
           <p className="mt-1 text-xs text-[#94765F]">
             Manage your platform efficiently.
