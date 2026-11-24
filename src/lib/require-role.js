@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 const dashboardRoutes = {
   admin: "/admin-dashboard",
   vendor: "/vendor-dashboard",
-  customer: "/dashboard",
+  customer: "/",
 };
 
 export const requireRole = async (requiredRole) => {

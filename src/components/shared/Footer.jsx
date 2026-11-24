@@ -8,8 +8,7 @@ const Footer = () => {
   const exploreLinks = [
     { name: "Home", href: "/" },
     { name: "Wedding Services", href: "/services" },
-    { name: "About Us", href: "/about" },
-    { name: "Sign In", href: "/login" },
+    { name: "Sign In", href: "/sign-in" },
   ];
 
   const serviceLinks = [
@@ -32,7 +31,7 @@ const Footer = () => {
           <div className="space-y-5">
             <Link href="/" className="inline-block">
               <h2 className="font-serif text-3xl font-bold italic text-[#F8F3EB]">
-                WedPlan
+                EverVow
                 <span className="text-[#D8A6A6]">.</span>
               </h2>
             </Link>

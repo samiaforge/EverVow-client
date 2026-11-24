@@ -11,7 +11,7 @@ const db = client.db("weddingplan");
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
 
-  ttrustedOrigins: [
+  trustedOrigins: [
   process.env.BETTER_AUTH_URL,
   process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   process.env.VERCEL_URL
