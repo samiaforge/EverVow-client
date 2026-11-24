@@ -70,7 +70,7 @@ export default function ManageUsersPage() {
 
   const [updatingUser, setUpdatingUser] = useState(null);
 
-  // Fetch all users
+
  // Fetch all users
 const fetchUsers = async () => {
   try {
