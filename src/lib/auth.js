@@ -14,7 +14,7 @@ const options = {
   maxPoolSize: 5,
   minPoolSize: 0,
   serverSelectionTimeoutMS: 15000,
-  connectTimeoutMS: 10000,
+  connectTimeoutMS: 30000,
 };
 
 const globalForMongo = globalThis;
