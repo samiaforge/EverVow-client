@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import {
   MAX_SERVICE_IMAGES,
   uploadImagesToImgBB,
 } from "@/lib/imgbb";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -22,7 +23,20 @@ export default function AddServicePage() {
   });
 
   const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const previewsRef = useRef([]);
+
+  useEffect(() => {
+    previewsRef.current = imagePreviews;
+  }, [imagePreviews]);
+
+  useEffect(() => {
+    return () => {
+      previewsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,13 +59,32 @@ export default function AddServicePage() {
       toast.error("Please select only image files.");
     }
 
-    const nextImages = [...images, ...validFiles];
+    const availableSlots = MAX_SERVICE_IMAGES - images.length;
+    const acceptedFiles = validFiles.slice(0, availableSlots);
 
-    if (nextImages.length > MAX_SERVICE_IMAGES) {
+    if (validFiles.length > availableSlots) {
       toast.error(`You can upload up to ${MAX_SERVICE_IMAGES} images.`);
     }
 
-    setImages(nextImages.slice(0, MAX_SERVICE_IMAGES));
+    const newPreviews = acceptedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setImages((current) => [...current, ...acceptedFiles]);
+    setImagePreviews((current) => [...current, ...newPreviews]);
+  };
+
+  const handleRemoveImage = (index) => {
+    const previewUrl = imagePreviews[index];
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setImages((current) => current.filter((_file, i) => i !== index));
+    setImagePreviews((current) =>
+      current.filter((_url, i) => i !== index)
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -129,7 +162,9 @@ export default function AddServicePage() {
         location: "",
       });
 
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
       setImages([]);
+      setImagePreviews([]);
 
       form.reset();
     } catch (error) {
@@ -255,15 +290,28 @@ export default function AddServicePage() {
             Select one or more images, up to {MAX_SERVICE_IMAGES}. Images are uploaded to ImgBB.
           </p>
 
-          {images.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {images.map((file, index) => (
-                <span
-                  key={`${file.name}-${index}`}
-                  className="rounded-full bg-[#F8F3EB] px-3 py-1 text-xs text-[#76243A]"
+          {imagePreviews.length > 0 && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {imagePreviews.map((previewUrl, index) => (
+                <div
+                  key={previewUrl}
+                  className="relative overflow-hidden rounded-lg border border-[#E7DCCF]"
                 >
-                  {file.name}
-                </span>
+                  <img
+                    src={previewUrl}
+                    alt={`Selected image ${index + 1}`}
+                    className="h-24 w-full object-cover"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label="Remove selected image"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-[#76243A] transition hover:bg-white"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
             </div>
           )}
