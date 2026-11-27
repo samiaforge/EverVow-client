@@ -17,21 +17,58 @@ const options = {
   connectTimeoutMS: 30000,
 };
 
-const globalForMongo = globalThis;
+let client;
+let clientBroken = false;
 
-const client =
-  globalForMongo.mongoClient || new MongoClient(uri, options);
-globalForMongo.mongoClient = client; // production e o
+function getClient() {
+  // A failed connect calls topology.close() but leaves client.topology set,
+  // so check isDestroyed() instead of relying on the property existing.
+  if (!client || clientBroken || client.topology?.isDestroyed()) {
+    client = new MongoClient(uri, options);
+    clientBroken = false;
+  }
+  return client;
+}
 
-client.on("topologyClosed", () => {
-  console.error("MONGO topologyClosed", new Error().stack);
+function resetClient() {
+  clientBroken = true;
+}
+
+// The adapter captures this object once. Resolve the live client per call.
+const db = new Proxy({}, {
+  get(_target, prop) {
+    const liveDb = getClient().db("weddingplan");
+    const value = liveDb[prop];
+    return typeof value === "function" ? value.bind(liveDb) : value;
+  },
 });
 
-client.connect().catch((e) => {
-  console.error("MONGO CONNECT FAIL:", e.name, e.message);
-});
+// mongodbAdapter() returns a factory: Better Auth calls it with its options.
+// Retry once with a fresh client if the topology dies during an operation.
+const adapterFactory = mongodbAdapter(db);
 
-const db = client.db("weddingplan");
+const database = new Proxy(adapterFactory, {
+  apply(target, thisArg, args) {
+    const adapter = target(...args);
+    return new Proxy(adapter, {
+      get(current, prop) {
+        const value = current[prop];
+        if (typeof value !== "function") return value;
+        return async (...callArgs) => {
+          try {
+            return await value.apply(current, callArgs);
+          } catch (error) {
+            if (error?.name === "MongoTopologyClosedError") {
+              resetClient();
+              return await current[prop](...callArgs);
+            }
+            throw error;
+          }
+        };
+      },
+    });
+  },
+});
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -89,9 +126,7 @@ export const auth = betterAuth({
     },
   },
 
-  database: mongodbAdapter(db, {
-    client,
-  }),
+  database,
 
   plugins: [jwt()],
 });
