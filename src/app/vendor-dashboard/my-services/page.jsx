@@ -131,7 +131,9 @@ const subscriptionData = await subscriptionResponse.json();
 if (subscriptionResponse.ok) {
   setIsPremium(
     subscriptionData.premium === true &&
-    subscriptionData.subscriptionStatus === "active"
+    ["active", "trialing"].includes(
+      (subscriptionData.subscriptionStatus || "").toLowerCase()
+    )
   );
 }
 
@@ -285,20 +287,55 @@ const response = await fetch(
   };
 
   // Delete service
-  const handleDeleteService = async (serviceId) => {
-    // Backend DELETE endpoint needs to be implemented.
-    toast.info("Delete API is not connected yet.", {
-      description: "We need to add the vendor delete route on the server.",
-    });
-  };
+ 
+const handleDeleteService = async (serviceId) => {
+  if (!window.confirm("Delete this service permanently?")) return;
 
-  // Availability toggle
-  const handleToggleAvailability = async (service) => {
-    // Backend availability endpoint needs to be implemented.
-    toast.info("Availability API is not connected yet.", {
-      description: "We need to add the vendor availability route on the server.",
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/services/${serviceId}`, {
+      method: "DELETE",
+      headers,
     });
-  };
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to delete service.");
+    }
+
+    toast.success("Service deleted successfully.");
+    await fetchMyServices();
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
+// Availability toggle
+const handleToggleAvailability = async (service) => {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(
+      `${API_URL}/services/${service.id}/availability`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ isActive: !service.isActive }),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to update availability.");
+    }
+
+    toast.success(result.message || "Availability updated.");
+    await fetchMyServices();
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
 
   // Status badge
   const getStatusBadge = (status) => {

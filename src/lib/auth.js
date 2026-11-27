@@ -55,7 +55,7 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "customer",
-        input: false,
+        input: true,
       },
       isBlocked: {
         type: "boolean",

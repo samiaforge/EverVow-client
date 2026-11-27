@@ -127,7 +127,9 @@ export default function SubscriptionPage() {
 
   const isPremium =
   subscription?.premium === true &&
-  subscription?.subscriptionStatus === "active";
+  ["active", "trialing"].includes(
+    (subscription?.subscriptionStatus || "").toLowerCase()
+  );
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
