@@ -3,6 +3,10 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import {
+  MAX_SERVICE_IMAGES,
+  uploadImagesToImgBB,
+} from "@/lib/imgbb";
 import { toast } from "sonner";
 
 
@@ -17,7 +21,7 @@ export default function AddServicePage() {
     location: "",
   });
 
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -29,6 +33,27 @@ export default function AddServicePage() {
     });
   };
 
+  const handleImageChange = (e) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    e.target.value = "";
+
+    const validFiles = selectedFiles.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (validFiles.length !== selectedFiles.length) {
+      toast.error("Please select only image files.");
+    }
+
+    const nextImages = [...images, ...validFiles];
+
+    if (nextImages.length > MAX_SERVICE_IMAGES) {
+      toast.error(`You can upload up to ${MAX_SERVICE_IMAGES} images.`);
+    }
+
+    setImages(nextImages.slice(0, MAX_SERVICE_IMAGES));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,9 +63,9 @@ export default function AddServicePage() {
       !formData.description.trim() ||
       !formData.price ||
       !formData.location.trim() ||
-      !image
+      images.length === 0
     ) {
-      toast.error("Please fill in all fields and select an image.");
+      toast.error("Please fill in all fields and select at least one image.");
       return;
     }
 
@@ -49,35 +74,18 @@ export default function AddServicePage() {
       return;
     }
 
-    if (!image.type.startsWith("image/")) {
-      toast.error("Please select a valid image.");
+    if (images.some((file) => !file.type.startsWith("image/"))) {
+      toast.error("Please select only valid image files.");
       return;
     }
+
+    const form = e.currentTarget;
 
     try {
       setLoading(true);
 
-      // Step 1: Upload image to ImgBB
-      const imageData = new FormData();
-      imageData.append("image", image);
-
-      const imgbbResponse = await fetch(
-        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-        {
-          method: "POST",
-          body: imageData,
-        }
-      );
-
-      const imgbbResult = await imgbbResponse.json();
-
-      if (!imgbbResponse.ok || !imgbbResult.success) {
-        throw new Error(
-          imgbbResult.error?.message || "Image upload failed."
-        );
-      }
-
-      const imageUrl = imgbbResult.data.url;
+      // Step 1: Upload images to ImgBB
+      const imageUrls = await uploadImagesToImgBB(images);
 
       // Step 2: Get JWT token from Better Auth
       const tokenResult = await authClient.token();
@@ -92,7 +100,7 @@ export default function AddServicePage() {
       const serviceData = {
         ...formData,
         price: Number(formData.price),
-        images: [imageUrl],
+        images: imageUrls,
       };
 
       const response = await fetch(`${API_URL}/services`, {
@@ -121,9 +129,9 @@ export default function AddServicePage() {
         location: "",
       });
 
-      setImage(null);
+      setImages([]);
 
-      e.target.reset();
+      form.reset();
     } catch (error) {
       console.error("Add service error:", error);
       toast.error(error.message || "Something went wrong.");
@@ -233,14 +241,32 @@ export default function AddServicePage() {
 
         <div>
           <label className="mb-2 block text-sm font-medium">
-            Service Image
+            Service Images
           </label>
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setImage(e.target.files[0])}
+            multiple
+            onChange={handleImageChange}
             className="w-full cursor-pointer rounded-lg border border-[#D8C8B8] bg-white text-sm text-[#A69A90] file:mr-4 file:cursor-pointer file:rounded-md file:border file:border-[#76243A] file:bg-[#F8F3EB] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#76243A] hover:file:bg-[#F1E8DC]"
           />
+
+          <p className="mt-2 text-xs text-[#94765F]">
+            Select one or more images, up to {MAX_SERVICE_IMAGES}. Images are uploaded to ImgBB.
+          </p>
+
+          {images.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {images.map((file, index) => (
+                <span
+                  key={`${file.name}-${index}`}
+                  className="rounded-full bg-[#F8F3EB] px-3 py-1 text-xs text-[#76243A]"
+                >
+                  {file.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <button

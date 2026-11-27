@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { authClient } from "@/lib/auth-client";
+import {
+  MAX_SERVICE_IMAGES,
+  uploadImagesToImgBB,
+} from "@/lib/imgbb";
 
 import {
   Card,
@@ -64,14 +68,17 @@ const categories = [
   "Wedding Fashion",
 ];
 
-// Get image from MongoDB service document
-const getServiceImage = (service) => {
-  if (Array.isArray(service.images)) {
-    return service.images[0] || "";
+// Get all images from a MongoDB service document
+const getServiceImages = (service) => {
+  if (Array.isArray(service?.images)) {
+    return service.images.filter((image) => typeof image === "string" && image.trim());
   }
 
-  return service.image || "";
+  return service?.image ? [service.image] : [];
 };
+
+// First image is used for cards and list thumbnails
+const getServiceImage = (service) => getServiceImages(service)[0] || "";
 
 export default function MyServicesPage() {
   // States
@@ -91,6 +98,7 @@ export default function MyServicesPage() {
   const [editingService, setEditingService] = useState(null);
 
   const [saving, setSaving] = useState(false);
+  const [uploadingEditImages, setUploadingEditImages] = useState(false);
 
   // Get JWT token
   const getAuthHeaders = async () => {
@@ -106,8 +114,59 @@ export default function MyServicesPage() {
     };
   };
 
- 
-  
+  const handleEditImagesChange = async (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (selectedFiles.length === 0) return;
+
+    if (selectedFiles.some((file) => !file.type.startsWith("image/"))) {
+      toast.error("Please select only image files.");
+      return;
+    }
+
+    const existingImages = getServiceImages(editingService);
+
+    if (existingImages.length + selectedFiles.length > MAX_SERVICE_IMAGES) {
+      toast.error(`A service can have up to ${MAX_SERVICE_IMAGES} images.`);
+      return;
+    }
+
+    try {
+      setUploadingEditImages(true);
+
+      const uploadedUrls = await uploadImagesToImgBB(selectedFiles);
+
+      setEditingService((current) => {
+        const currentImages = getServiceImages(current);
+
+        return {
+          ...current,
+          images: [...currentImages, ...uploadedUrls],
+          image: uploadedUrls[0] || currentImages[0] || "",
+        };
+      });
+    } catch (error) {
+      toast.error(error.message || "Image upload failed.");
+    } finally {
+      setUploadingEditImages(false);
+    }
+  };
+
+  const handleRemoveEditImage = (indexToRemove) => {
+    setEditingService((current) => {
+      const remainingImages = getServiceImages(current).filter(
+        (_image, index) => index !== indexToRemove
+      );
+
+      return {
+        ...current,
+        images: remainingImages,
+        image: remainingImages[0] || "",
+      };
+    });
+  };
+
   // Fetch logged-in vendor's services
   const fetchMyServices = async () => {
     try {
@@ -162,6 +221,7 @@ const response = await fetch(
         serviceList.map((service) => ({
           ...service,
           id: service._id || service.id,
+          images: getServiceImages(service),
           image: getServiceImage(service),
           status: (service.status || "pending").toLowerCase(),
           isActive: service.isActive ?? true,
@@ -237,6 +297,13 @@ const response = await fetch(
   const handleEditService = async () => {
     if (!editingService) return;
 
+    const serviceImages = getServiceImages(editingService);
+
+    if (serviceImages.length === 0) {
+      toast.error("Please keep at least one service image.");
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -248,9 +315,7 @@ const response = await fetch(
         description: editingService.description,
         price: Number(editingService.price),
         location: editingService.location,
-       images: editingService.image
-  ? [editingService.image.trim()]
-  : [],
+        images: serviceImages,
       };
 
       const response = await fetch(
@@ -960,32 +1025,49 @@ const handleToggleAvailability = async (service) => {
 
                <div>
       <label className="mb-2 block text-sm font-medium text-[#292321]">
-        Service Image URL
+        Service Images
       </label>
 
       <Input
-        type="url"
-        placeholder="Paste your ImgBB Direct Link"
-        value={editingService.image || ""}
-        onChange={(event) =>
-          setEditingService({
-            ...editingService,
-            image: event.target.value,
-          })
-        }
+        type="file"
+        accept="image/*"
+        multiple
+        disabled={uploadingEditImages}
+        onChange={handleEditImagesChange}
       />
 
-      {editingService.image && (
-        <img
-          src={editingService.image}
-          alt="Service preview"
-          className="mt-3 h-40 w-full rounded-lg border border-[#E7DCCF] object-cover"
-        />
+      <p className="mt-2 text-xs text-[#94765F]">
+        Add more images to upload them to ImgBB. Up to {MAX_SERVICE_IMAGES} images total.
+      </p>
+
+      {uploadingEditImages && (
+        <p className="mt-2 text-xs text-[#76243A]">Uploading images...</p>
       )}
 
-      <p className="mt-2 text-xs text-[#94765F]">
-        Upload your image to ImgBB and paste the Direct Link here.
-      </p>
+      {getServiceImages(editingService).length > 0 && (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {getServiceImages(editingService).map((imageUrl, index) => (
+            <div
+              key={`${imageUrl}-${index}`}
+              className="relative overflow-hidden rounded-lg border border-[#E7DCCF]"
+            >
+              <img
+                src={imageUrl}
+                alt={`Service image ${index + 1}`}
+                className="h-24 w-full object-cover"
+              />
+
+              <button
+                type="button"
+                onClick={() => handleRemoveEditImage(index)}
+                className="absolute right-1 top-1 rounded bg-white/90 px-2 py-1 text-[10px] font-medium text-[#76243A] hover:bg-white"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
 
   </div>
@@ -999,14 +1081,14 @@ const handleToggleAvailability = async (service) => {
 
             <Button
               variant="outline"
-              disabled={saving}
+              disabled={saving || uploadingEditImages}
               onClick={() => setEditingService(null)}
             >
               Cancel
             </Button>
 
             <Button
-              disabled={saving}
+              disabled={saving || uploadingEditImages}
               onClick={handleEditService}
               className="bg-[#76243A] hover:bg-[#581525]"
             >
@@ -1043,12 +1125,17 @@ const handleToggleAvailability = async (service) => {
 
               <div className="space-y-4">
 
-                {selectedService.image && (
-                  <img
-                    src={selectedService.image}
-                    alt={selectedService.serviceName}
-                    className="h-64 w-full rounded-lg object-cover"
-                  />
+                {getServiceImages(selectedService).length > 0 && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {getServiceImages(selectedService).map((imageUrl, index) => (
+                      <img
+                        key={`${imageUrl}-${index}`}
+                        src={imageUrl}
+                        alt={`${selectedService.serviceName} image ${index + 1}`}
+                        className="h-48 w-full rounded-lg object-cover"
+                      />
+                    ))}
+                  </div>
                 )}
 
                 <div className="flex flex-wrap gap-2">
